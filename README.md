@@ -56,7 +56,17 @@ not alongside it (both are idempotent, but there is no reason to run two).
 
 ## Check it is working
 
-After the restart your log should contain, at INFO level:
+Home Assistant logs at WARNING by default, so a successful patch is silent;
+only a failure shows up (as an ERROR). To see the success lines, add this
+before restarting:
+
+```yaml
+logger:
+  logs:
+    custom_components.ring_push_keepalive: info
+```
+
+The log should then contain:
 
 ```text
 firebase-messaging 0.4.5: patched web push header parsing
