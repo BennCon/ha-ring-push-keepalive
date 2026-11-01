@@ -35,8 +35,13 @@ _EARLY_STATES = (
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Patch the Ring listener, then get out of the way."""
     try:
-        # Imports from site-packages, so keep it off the event loop.
-        summaries = await hass.async_add_executor_job(apply_patches)
+        # Imports from site-packages, so keep it off the event loop. Use the
+        # import executor, not the general pool: it is a single thread that
+        # serialises every integration import. On the general pool, importing
+        # ring_doorbell while Home Assistant imports Ring can leave Ring with a
+        # half-initialised module ("module 'ring_doorbell' has no attribute
+        # 'const'"), which fails Ring setup until the next restart.
+        summaries = await hass.async_add_import_executor_job(apply_patches)
     except Exception:
         # Never block startup over this. An unpatched listener fails
         # silently, so this ERROR is the signal to alert on.
